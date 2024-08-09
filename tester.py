@@ -26,8 +26,8 @@ def is_prime(num):
     return True
 
 # Function to check if one bucket contains all primes and no other buckets contain primes
-def check_buckets(n, bucket_fraction):
-    bucket_size = max(int(n * bucket_fraction), 1)  # Ensure bucket_size is at least 1
+def check_buckets(n, num_buckets):
+    bucket_size = max(n // num_buckets, 1)  # Ensure bucket_size is at least 1
     all_primes = [i for i in range(1, n + 1) if is_prime(i)]
     prime_buckets = []
     non_prime_buckets = []
@@ -47,32 +47,35 @@ def check_buckets(n, bucket_fraction):
     return False, [], len(prime_buckets) + len(non_prime_buckets)
 
 # Function to test the formula with decreasing bucket fractions and step sizes
-def find_prime_bucket(n_points, start_step, end_step, min_fraction):
+def find_prime_bucket(n_points, start_step, min_fraction):
     current_step = start_step
     total_buckets = 0
 
-    while current_step >= end_step:
-        bucket_fraction = 1.0
-        while bucket_fraction >= min_fraction:
-            found_prime_bucket, prime_bucket, buckets_used = check_buckets(n_points, bucket_fraction)
-            total_buckets += buckets_used
+    while current_step >= min_fraction:
+        num_buckets = 2  # Start with 2 buckets since 1 bucket doesn't make sense
+        max_buckets = int(1 / current_step) * n_points
+        while num_buckets <= max_buckets:
+            print(f"Testing with num_buckets: {num_buckets}, current_step: {current_step:.4f}")
+            found_prime_bucket, prime_bucket, buckets_used = check_buckets(n_points, num_buckets)
+            total_buckets += 1  # Increment total_buckets for each test
 
             if found_prime_bucket:
                 return True, prime_bucket, total_buckets
 
-            bucket_fraction = max(bucket_fraction - current_step, min_fraction)
+            num_buckets += 1
 
         current_step /= 10
+        print(f"Decreasing step size, new current_step: {current_step:.4f}")
 
     return False, [], total_buckets
 
 # Test the formula with decreasing bucket fractions and step sizes
 n_points = 100
 start_step = 1
-end_step = 0.01
-min_fraction = 0.01
+min_fraction = 0.0001
 
-found_prime_bucket, prime_bucket, total_buckets_used = find_prime_bucket(n_points, start_step, end_step, min_fraction)
+print("Starting the search for prime buckets...")
+found_prime_bucket, prime_bucket, total_buckets_used = find_prime_bucket(n_points, start_step, min_fraction)
 
 if found_prime_bucket:
     print(f"Found a bucket with all primes: {list(prime_bucket)}")
