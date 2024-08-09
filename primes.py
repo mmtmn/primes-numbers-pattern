@@ -22,15 +22,19 @@ def dual_spiral(n_points):
     y_up = []
     z_up = []
     colors_up = []
-
     x_down = []
     y_down = []
     z_down = []
     colors_down = []
-
     angle = 0
     step = 0.1
     z_step = 0.01
+
+    primes_up = 0
+    non_primes_up = 0
+    primes_down = 0
+    non_primes_down = 0
+
     for i in range(1, n_points + 1):
         angle += step
         r = angle
@@ -41,8 +45,10 @@ def dual_spiral(n_points):
             z_up.append(i * z_step)
             if is_prime(i):
                 colors_up.append('black')
+                primes_up += 1
             else:
                 colors_up.append('gray')
+                non_primes_up += 1
         else:
             # Downward spiral
             x_down.append(r * np.cos(angle))
@@ -50,14 +56,18 @@ def dual_spiral(n_points):
             z_down.append(-i * z_step)
             if is_prime(i):
                 colors_down.append('black')
+                primes_down += 1
             else:
                 colors_down.append('gray')
-    
+                non_primes_down += 1
+
+    print(f"Top section: {primes_up} primes, {non_primes_up} non-primes")
+    print(f"Bottom section: {primes_down} primes, {non_primes_down} non-primes")
+
     return (x_up, y_up, z_up, colors_up), (x_down, y_down, z_down, colors_down)
 
 fig = plt.figure(figsize=(10, 10))
 ax = fig.add_subplot(111, projection='3d')
-
 spiral_data = []
 
 def animate(i):
@@ -72,21 +82,17 @@ def animate(i):
 def recursive_spiral_plotting(n_points, depth=1):
     (x_up, y_up, z_up, colors_up), (x_down, y_down, z_down, colors_down) = dual_spiral(n_points)
     spiral_data.append((x_up, y_up, z_up, colors_up, x_down, y_down, z_down, colors_down, f'Spiral with {n_points} Points (Depth {depth})'))
-    
     if len(x_down) <= 2:
         return
-
     # Further divide the downward spiral into new upward and downward spirals
     new_x_up = []
     new_y_up = []
     new_z_up = []
     new_colors_up = []
-
     new_x_down = []
     new_y_down = []
     new_z_down = []
     new_colors_down = []
-
     angle = 0
     step = 0.1
     z_step = 0.01
@@ -111,15 +117,12 @@ def recursive_spiral_plotting(n_points, depth=1):
                 new_colors_down.append('black')
             else:
                 new_colors_down.append('gray')
-
     spiral_data.append((new_x_up, new_y_up, new_z_up, new_colors_up, new_x_down, new_y_down, new_z_down, new_colors_down, f'New Spiral with {len(new_x_up) + len(new_x_down)} Points (Depth {depth + 1})'))
-
     # Recursively analyze the new downward spiral
     recursive_spiral_plotting(len(new_x_down), depth + 1)
 
 # Number of points to plot
 n_points = 100000
 recursive_spiral_plotting(n_points)
-
 ani = FuncAnimation(fig, animate, frames=len(spiral_data), interval=1000, repeat=False)
 plt.show()
