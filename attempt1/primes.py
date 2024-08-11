@@ -29,7 +29,6 @@ def dual_spiral(n_points):
     angle = 0
     step = 0.1
     z_step = 0.01
-
     primes_up = 0
     non_primes_up = 0
     primes_down = 0
@@ -63,7 +62,6 @@ def dual_spiral(n_points):
 
     print(f"Top section: {primes_up} primes, {non_primes_up} non-primes")
     print(f"Bottom section: {primes_down} primes, {non_primes_down} non-primes")
-
     return (x_up, y_up, z_up, colors_up), (x_down, y_down, z_down, colors_down)
 
 fig = plt.figure(figsize=(10, 10))
@@ -94,8 +92,8 @@ def recursive_spiral_plotting(n_points, depth=1):
     new_z_down = []
     new_colors_down = []
     angle = 0
-    step = 0.1
-    z_step = 0.01
+    step = 0.00001
+    z_step = 0.00001
     for i in range(1, len(x_down) + 1):
         angle += step
         r = angle
@@ -124,5 +122,18 @@ def recursive_spiral_plotting(n_points, depth=1):
 # Number of points to plot
 n_points = 100000
 recursive_spiral_plotting(n_points)
-ani = FuncAnimation(fig, animate, frames=len(spiral_data), interval=1000, repeat=False)
+
+# Animation function
+ani = None
+
+def start_animation(event):
+    global ani
+    if event.key == ' ':
+        ani = FuncAnimation(fig, animate, frames=len(spiral_data), interval=1000, repeat=False)
+        plt.draw()
+
+# Connect the event handler to the figure
+fig.canvas.mpl_connect('key_press_event', start_animation)
+
+print("Press the space bar to start the animation.")
 plt.show()
