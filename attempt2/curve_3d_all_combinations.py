@@ -1,4 +1,5 @@
 import math
+import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
@@ -23,14 +24,14 @@ def generate_numbers_and_primes(limit):
     primes = [is_prime(num) for num in numbers]
     return numbers, primes
 
-def check_alignment(primes, rows, cols, depth):
-    """Check if primes align in a single continuous line in 3D."""
+def check_alignment(primes, rows, cols, depth, angle):
+    """Check if primes align in a single continuous line or curve in 3D."""
     def index(r, c, d):
         return r * cols * depth + c * depth + d
 
     prime_positions = [(r, c, d) for r in range(rows) for c in range(cols) for d in range(depth) if primes[index(r, c, d)]]
 
-    # Check all possible lines in 3D space
+    # Check all possible lines and curves in 3D space
     for r1, c1, d1 in prime_positions:
         for r2, c2, d2 in prime_positions:
             if (r1, c1, d1) != (r2, c2, d2):
@@ -50,9 +51,27 @@ def check_alignment(primes, rows, cols, depth):
                 if len(aligned_positions) == len(prime_positions):
                     return aligned_positions
 
+                # Check for curves
+                for theta in range(1, angle + 1):
+                    theta_rad = math.radians(theta)
+                    cos_theta, sin_theta = math.cos(theta_rad), math.sin(theta_rad)
+                    r, c, d = r1, c1, d1
+                    aligned_positions = [(r, c, d)]
+                    while 0 <= r < rows and 0 <= c < cols and 0 <= d < depth:
+                        r += int(dr * cos_theta - dc * sin_theta)
+                        c += int(dr * sin_theta + dc * cos_theta)
+                        d += dd
+                        if 0 <= r < rows and 0 <= c < cols and 0 <= d < depth and primes[index(r, c, d)]:
+                            aligned_positions.append((r, c, d))
+                        else:
+                            break
+
+                    if len(aligned_positions) == len(prime_positions):
+                        return aligned_positions
+
     return None
 
-def find_alignments(limit):
+def find_alignments(limit, angle):
     """Find all 3D grid configurations where primes align."""
     numbers, primes = generate_numbers_and_primes(limit)
     alignments = []
@@ -62,7 +81,7 @@ def find_alignments(limit):
             if (limit % (rows * cols)) == 0:
                 depth = limit // (rows * cols)
                 if depth > 1:
-                    alignment = check_alignment(primes, rows, cols, depth)
+                    alignment = check_alignment(primes, rows, cols, depth, angle)
                     if alignment:
                         alignments.append(alignment)
 
@@ -111,8 +130,9 @@ def visualize_alignments(alignments, limit):
     plt.show()
 
 def main():
-    limit = 10000  # You can change this limit to generate more numbers
-    alignments = find_alignments(limit)
+    limit = 100  # You can change this limit to generate more numbers
+    angle = 89  # Maximum angle to check for curves
+    alignments = find_alignments(limit, angle)
 
     if alignments:
         print(f"Prime numbers align in the following 3D grid configurations for limit {limit}:")
